@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AgeGate } from "@/components/age-gate";
 import { QuizFlow } from "@/components/quiz-flow";
 import { ResultScreen } from "@/components/result-screen";
@@ -11,7 +11,12 @@ import {
   toPreferenceProfile,
   type QuizStepId,
 } from "@/data/questions";
-import { hasAgeConfirmation, setAgeConfirmation } from "@/lib/ageGate";
+import {
+  confirmAgeGate,
+  getAgeConfirmationServerSnapshot,
+  getAgeConfirmationSnapshot,
+  subscribeAgeConfirmation,
+} from "@/lib/ageGate";
 import { trackEvent } from "@/lib/analytics";
 import { nextAlternative, recommend, type Recommendation } from "@/lib/recommendationEngine";
 import { activeProvider } from "@/lib/providers";
@@ -20,7 +25,11 @@ import type { QuizAnswers } from "@/lib/types";
 type Phase = "quiz" | "result";
 
 export function QuizExperience() {
-  const [confirmed, setConfirmed] = useState(hasAgeConfirmation);
+  const confirmed = useSyncExternalStore(
+    subscribeAgeConfirmation,
+    getAgeConfirmationSnapshot,
+    getAgeConfirmationServerSnapshot,
+  );
   const [phase, setPhase] = useState<Phase>("quiz");
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Partial<QuizAnswers>>({});
@@ -30,17 +39,13 @@ export function QuizExperience() {
   const trackedInitialStart = useRef(false);
 
   useEffect(() => {
-    if (trackedInitialStart.current || !hasAgeConfirmation()) return;
+    if (trackedInitialStart.current || !confirmed) return;
     trackedInitialStart.current = true;
     trackEvent("quiz_started");
-  }, []);
+  }, [confirmed]);
 
   function confirmAge() {
-    setAgeConfirmation();
-    setConfirmed(true);
-    if (trackedInitialStart.current) return;
-    trackedInitialStart.current = true;
-    trackEvent("quiz_started");
+    confirmAgeGate();
   }
 
   function finish(nextAnswers: QuizAnswers) {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { QuizLoader } from "@/components/quiz-loader";
+import { QuizExperience } from "@/components/quiz-experience";
 
 export const metadata: Metadata = {
   title: "Find your match",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function QuizPage() {
-  return <QuizLoader />;
+  return <QuizExperience />;
 }
