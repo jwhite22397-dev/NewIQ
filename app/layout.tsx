@@ -44,7 +44,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${outfit.variable} ${fraunces.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      data-scroll-behavior="smooth"
+      className={`${outfit.variable} ${fraunces.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
         <a href="#content" className="skip-link">
           Skip to content
